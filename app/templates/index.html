@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SmartLead AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            background: #111827;
+            color: white;
+            padding: 20px 0;
+        }
+
+        header .container {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 70px 20px;
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            margin-bottom: 15px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #6b7280;
+            margin-bottom: 35px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        #sonuc {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="container">
+        <div class="logo">SmartLead AI</div>
+    </div>
+</header>
+<section class="hero">
+    <div class="card">
+        <h2>AI Asistan</h2>
+
+        <div id="sohbet">
+            <p>Merhaba! Size nasıl yardımcı olabilirim?</p>
+        </div>
+
+        <input
+            type="text"
+            id="aiMesaj"
+            placeholder="Mesajınızı yazın..."
+        >
+
+        <button onclick="aiMesajGonder()">
+            Gönder
+        </button>
+    </div>
+</section>
+<main>
+    <section class="hero">
+        <h1>SmartLead AI</h1>
+        <p>Yapay zekâ destekli akıllı lead yönetim sistemi</p>
+
+        <div class="card">
+            <h2>Yeni Lead Ekle</h2>
+
+            <input
+                type="text"
+                id="isim"
+                placeholder="Ad Soyad"
+            >
+
+            <input
+                type="text"
+                id="telefon"
+                placeholder="Telefon"
+            >
+
+            <textarea
+                id="mesaj"
+                placeholder="Mesaj"
+            ></textarea>
+
+            <button onclick="leadEkle()">
+                Lead Kaydet
+            </button>
+
+            <div id="sonuc"></div>
+        </div>
+    </section>
+</main>
+async function aiMesajGonder() {
+
+    const input = document.getElementById("aiMesaj");
+    const sohbet = document.getElementById("sohbet");
+
+    const mesaj = input.value.trim();
+
+    if (!mesaj) {
+        return;
+    }
+
+    sohbet.innerHTML += `
+        <p><strong>Sen:</strong> ${mesaj}</p>
+    `;
+
+    input.value = "";
+
+    try {
+
+        const response = await fetch("/api/sohbet", {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                mesaj: mesaj
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.basari) {
+
+            sohbet.innerHTML += `
+                <p><strong>AI:</strong> ${data.cevap}</p>
+            `;
+
+        } else {
+
+            sohbet.innerHTML += `
+                <p><strong>AI:</strong> ${data.hata}</p>
+            `;
+        }
+
+    } catch (error) {
+
+        sohbet.innerHTML += `
+            <p><strong>AI:</strong> Bağlantı sırasında bir hata oluştu.</p>
+        `;
+    }
+}
+<script>
+async function leadEkle() {
+
+    const isim = document.getElementById("isim").value;
+    const telefon = document.getElementById("telefon").value;
+    const mesaj = document.getElementById("mesaj").value;
+
+    const sonuc = document.getElementById("sonuc");
+
+    try {
+
+        const response = await fetch("/api/leads", {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                isim: isim,
+                telefon: telefon,
+                mesaj: mesaj
+            })
+        });
+
+        const data = await response.json();
+
+        sonuc.style.display = "block";
+        sonuc.innerText = data.mesaj || data.hata;
+
+    } catch (error) {
+
+        sonuc.style.display = "block";
+        sonuc.innerText = "Bir hata oluştu.";
+    }
+}
+
+
+async function aiMesajGonder() {
+
+    const input = document.getElementById("aiMesaj");
+    const sohbet = document.getElementById("sohbet");
+
+    const mesaj = input.value.trim();
+
+    if (!mesaj) {
+        return;
+    }
+
+    sohbet.innerHTML += `
+        <p><strong>Sen:</strong> ${mesaj}</p>
+    `;
+
+    input.value = "";
+
+    try {
+
+        const response = await fetch("/api/sohbet", {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                mesaj: mesaj
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.basari === true) {
+
+            sohbet.innerHTML += `
+                <p><strong>AI:</strong> ${data.cevap}</p>
+            `;
+
+        } else {
+
+            sohbet.innerHTML += `
+                <p><strong>AI:</strong> ${data.hata}</p>
+            `;
+        }
+
+    } catch (error) {
+
+        sohbet.innerHTML += `
+            <p><strong>AI:</strong> Bağlantı hatası oluştu.</p>
+        `;
+    }
+}
+</script>
+
+</body>
+</html>
